@@ -3,6 +3,7 @@ using Services.PoolSystem.Data;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Services.PoolSystem.Core
 {
@@ -10,25 +11,12 @@ namespace Services.PoolSystem.Core
     {
         private Dictionary<string, GameObject> _prefabs;
         private List<GameObject> _poolList;
+        private IServiceProvider _serviceProvider;
 
-        #region Singleton
-        private static PoolService instance;
-        public static PoolService Instance
+        [Preserve]
+        public PoolService(IServiceProvider serviceProvider)
         {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new PoolService();
-                }
-                return instance;
-            }
-        }
-
-        #endregion
-
-        private PoolService()
-        {
+            _serviceProvider = serviceProvider;
             _prefabs = new Dictionary<string, GameObject>();
             _poolList = new List<GameObject>();
             FillPrefabs();
@@ -63,7 +51,7 @@ namespace Services.PoolSystem.Core
                 _poolList.Add(gameObject);
                 gameObject.SetActive(true);
                 IPoolable poolable = gameObject.GetComponent<IPoolable>();
-                poolable.Initialize();
+                poolable.Initialize(_serviceProvider);
                 poolable.OnGetFromPool();
                 return gameObject;
             }
